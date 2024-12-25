@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 import tempfile
 import os
-from musicpy.algorithms import C
+from musicpy.algorithms import C, drum, P
 from musicpy.daw import daw
 from .song import Song
 import logging
@@ -32,6 +32,25 @@ async def generate_progression(prog: Song):
         logger.info(f"Repeating for {prog.bars} bars")
         progression = progression * prog.bars
         
+        # Create a piece with two tracks if drums are enabled
+        tracks = [progression]
+        instruments = ["Acoustic Grand Piano"]
+        channels = [0]
+        
+        if prog.drums:
+            drum_obj = drum("K;H,H,S;H,H") 
+            drum_pattern = drum_obj.notes * len(chords)
+            tracks.append(drum_pattern)
+            instruments.append("Synth Drum")
+            channels.append(9)  # Channel 9 is reserved for drums in MIDI
+            
+        piece = P(
+            tracks=tracks,
+            instruments=instruments,
+            bpm=prog.tempo,
+            channels=channels
+        )
+        
         # Create temporary file for WAV
         temp_dir = tempfile.mkdtemp()
         output_path = os.path.join(temp_dir, "progression.wav")
@@ -39,17 +58,18 @@ async def generate_progression(prog: Song):
         
         # Initialize DAW and export
         logger.info(f"Initializing DAW with tempo: {prog.tempo}")
-        song = daw(1)
+        my_daw = daw(len(tracks))
         
-        # Load sf2 file
+        # Load sf2 file for all channels
         logger.info("Loading sf2 file")
-        song.load(0, "./soundfonts/arachno.sf2")
+        for i in range(len(tracks)):
+            my_daw.load(i, "./soundfonts/arachno.sf2")
         
-        # Export to WAV (following documentation example)
-        logger.info("Exporting progression to WAV")
-        song.export(
-            progression,
-            mode='wav',
+        # Export to WAV
+        logger.info("Exporting piece to WAV")
+        my_daw.export(
+            piece,
+            mode="wav",
             filename=output_path,
             bpm=prog.tempo
         )
