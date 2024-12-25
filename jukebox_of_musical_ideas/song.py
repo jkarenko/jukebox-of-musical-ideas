@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
 
-class ChordProgression(BaseModel):
+class Song(BaseModel):
     progression: List[str]
     tempo: Optional[int] = 120
     bars: Optional[int] = 1

@@ -4,7 +4,7 @@ import tempfile
 import os
 from musicpy.algorithms import C
 from musicpy.daw import daw
-from .chordprogression import ChordProgression
+from .song import Song
 import logging
 
 # Configure logging
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 @app.post("/generate/")
-async def generate_progression(prog: ChordProgression):
+async def generate_progression(prog: Song):
     try:
         # Convert chord names to musicpy chord objects
         logger.info(f"Converting chords: {prog.progression}")
