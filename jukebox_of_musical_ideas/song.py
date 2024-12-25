@@ -6,4 +6,4 @@ class Song(BaseModel):
     tempo: Optional[int] = 120
     bars: Optional[int] = 1
     style: Optional[str] = "basic"
-    drums: bool = False
+    drums: Optional[str] = None

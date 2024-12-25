@@ -13,6 +13,62 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+# Example dictionary of typical drum beats
+
+TYPICAL_DRUM_BEATS = {
+    # "basic_rock": Kick+Hi-Hat on 1, Hi-Hat on 2, Snare+Hi-Hat on 3, Hi-Hat on 4
+    "basic": "K;H,H,S;H,H",
+
+    # "four_on_the_floor": Kick+Hi-Hat every beat
+    "four_on_the_floor": "K;H,K;H,K;H,K;H",
+
+    # Variation: "kick_snare_hat": Kick on 1, Hat on 2, Snare on 3, Hat on 4
+    "kick_snare_hat": "K,H,S,H",
+
+    # Syncopated: 
+    #   1) Kick+Hi-Hat
+    #   2) Hi-Hat
+    #   3) Snare+Hi-Hat
+    #   4) Half-beat rest: 0[l:1/2], then half-beat Kick: K[l:1/2]
+    "syncopated": "K;H,H,S;H,0[l:1/2],K[l:1/2]",
+
+    # "shuffle": Kick+Hi-Hat on 1, Hi-Hat on 2&, Snare+Hi-Hat on 3, Hi-Hat on 4&
+    "shuffle": "K;H,0,H,S;H,0,H",
+    
+    # "half_time": Kick on 1, Hi-Hat on all beats, Snare on 3
+    "half_time": "K;H,H,S;H,H",
+    
+    # "disco": Kick on 1&3, Hi-Hat on all beats, Snare on 2&4
+    "disco": "K;H,S;H,K;H,S;H",
+    
+    # "waltz": 3/4 time - Kick on 1, Snare on 2&3, Hi-Hat throughout
+    "waltz": "K;H,S;H,S;H",
+    
+    # "funk": Classic JB-style funk - syncopated kicks, snare on 2&4, steady hi-hat
+    "funk": "K;H,H,K;H,S;H,K,H,S;H,K,H",
+    
+    # "breakbeat": Classic break pattern
+    "breakbeat": "K;H,0,H,S;H,K,H,K;H,0,H,S;H,0,H",
+    
+    # "latin": Basic bossa nova inspired pattern
+    "latin": "K;H,0,H,S;H,K,H",
+
+    # "skank": Fast alternating bass and snare with constant hi-hat (punk/metal staple)
+    "skank": "K;H,S;H,K;H,S;H",
+    
+    # "traditional_blast": Traditional blast beat - alternating kick/snare with hi-hat on kicks
+    "traditional_blast": "K;H,S,K;H,S,K;H,S,K;H,S,t:1/2",
+    
+    # "hammer_blast": Everything hits together - kick, snare, and hi-hat in unison
+    "hammer_blast": "K;S;H,K;S;H,K;S;H,K;S;H,r:2,t:1/4",
+    
+    # "euro_blast": Kick and snare alternate with constant hi-hat (aka "Running" blast)
+    "euro_blast": "K;H,S;H,K;H,S;H,t:1/2" * 2,
+    
+    # "bomb_blast": Double-time with kick and cymbal together, snare offbeats
+    "bomb_blast": "K;H,S,K;H,S,K;H,S,K;H,S",
+}
+
 @app.post("/generate/")
 async def generate_progression(prog: Song):
     try:
@@ -34,16 +90,17 @@ async def generate_progression(prog: Song):
         
         # Create a piece with two tracks if drums are enabled
         tracks = [progression]
-        instruments = ["Acoustic Grand Piano"]
+        instruments = ["Distortion Guitar"]
         channels = [0]
         
-        if prog.drums:
-            drum_obj = drum("K;H,H,S;H,H") 
+        if isinstance(prog.drums, str) and prog.drums in TYPICAL_DRUM_BEATS:
+            drum_string = TYPICAL_DRUM_BEATS[prog.drums]
+            drum_obj = drum(drum_string)
             drum_pattern = drum_obj.notes * len(chords)
             tracks.append(drum_pattern)
             instruments.append("Synth Drum")
-            channels.append(9)  # Channel 9 is reserved for drums in MIDI
-            
+            channels.append(9)
+        
         piece = P(
             tracks=tracks,
             instruments=instruments,
