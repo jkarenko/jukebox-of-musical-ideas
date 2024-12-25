@@ -28,12 +28,6 @@ async def generate_progression(prog: ChordProgression):
             progression += chord
             logger.info(f"Added chord: {chord}, progression now: {progression}")
         
-        # Transpose to target key if not already in that key
-        if prog.key != 'C':
-            logger.info(f"Transposing from C to {prog.key}")
-            progression = progression.to(prog.key)
-            logger.info(f"Transposed progression: {progression}")
-        
         # Repeat for requested bars
         logger.info(f"Repeating for {prog.bars} bars")
         progression = progression * prog.bars
