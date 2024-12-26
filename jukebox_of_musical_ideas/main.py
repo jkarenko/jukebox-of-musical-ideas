@@ -60,13 +60,20 @@ TYPICAL_DRUM_BEATS = {
     "traditional_blast": "K;H,S,K;H,S,K;H,S,K;H,S,r:2,t:1/2",
     
     # "hammer_blast": Everything hits together - kick, snare, and hi-hat in unison
-    "hammer_blast": "K;S;H,K;S;H,K;S;H,K;S;H,r:2,t:1/4",
+    "hammer_blast": "K;S;H,K;S;H,K;S;H,K;S;H,r:2,t:1/2",
     
-    # "euro_blast": Kick and snare alternate with constant hi-hat (aka "Running" blast)
-    "euro_blast": "K;H,S;H,K;H,S;H,t:1/2" * 2,
+    # "euro_blast": Kick and snare alternate, slow hi-hat
+    "euro_blast_slow": "K;H,S,K,S,r:2,t:1/2",
+    "euro_blast_fast": "K;H,S,K,S,r:4,t:1/4",
     
-    # "bomb_blast": Double-time with kick and cymbal together, snare offbeats
-    "bomb_blast": "K;H,S,K;H,S,K;H,S,K;H,S",
+    # "bomb_blast": Double bass
+    "bomb_blast": "K;H;S,K,K;H;S,K,K;H;S,K,K;H;S,K,K;H;S,K,K;H;S,K,r:2,t:1/2",
+    
+    # "gravity_blast"
+    "gravity_blast": "K;H;S,S,K;H;S,S,K;H;S,S,K;H;S,S,K;H;S,S,K;H;S,S,r:2,t:1/2",
+    
+    # triple blast
+    "triplet_blast": "S;H,K,K, S;H,K,K, S;H,K,K, S;H,K,K, S;H,K,K, S;H,K,K, r:1,t:1/1",
 }
 
 @app.post("/generate/")
