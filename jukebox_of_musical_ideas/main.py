@@ -57,7 +57,7 @@ TYPICAL_DRUM_BEATS = {
     "skank": "K;H,S;H,K;H,S;H",
     
     # "traditional_blast": Traditional blast beat - alternating kick/snare with hi-hat on kicks
-    "traditional_blast": "K;H,S,K;H,S,K;H,S,K;H,S,t:1/2",
+    "traditional_blast": "K;H,S,K;H,S,K;H,S,K;H,S,r:2,t:1/2",
     
     # "hammer_blast": Everything hits together - kick, snare, and hi-hat in unison
     "hammer_blast": "K;S;H,K;S;H,K;S;H,K;S;H,r:2,t:1/4",
@@ -74,7 +74,7 @@ async def generate_progression(prog: Song):
     try:
         # Convert chord names to musicpy chord objects
         logger.info(f"Converting chords: {prog.progression}")
-        chords = [C(f"{chord}") for chord in prog.progression]
+        chords = [(C(f"{chord}")) % (1,0) for chord in prog.progression]
         logger.info(f"Created chord objects: {chords}")
         
         # Combine chords using addition
@@ -99,9 +99,8 @@ async def generate_progression(prog: Song):
         channels.append(1)
         
         # Add a bass track
-        bass_notes = [str(c.notes[0]) + "[l:1/4; i:1/4]" for c in chords]
+        bass_notes = [str(c.notes[0]) + "[l:1; i:1]" for c in chords]
         bass_track = translate(", ".join(bass_notes))
-        print(bass_track)
         bass_track = bass_track - 24
         bass_track = bass_track * prog.bars
         tracks.append(bass_track)
@@ -111,7 +110,7 @@ async def generate_progression(prog: Song):
         if isinstance(prog.drums, str) and prog.drums in TYPICAL_DRUM_BEATS:
             drum_string = TYPICAL_DRUM_BEATS[prog.drums]
             drum_obj = drum(drum_string)
-            drum_pattern = drum_obj.notes * len(chords)
+            drum_pattern = drum_obj.notes * len(chords) * prog.bars
             tracks.append(drum_pattern)
             instruments.append(127)
             channels.append(9)
