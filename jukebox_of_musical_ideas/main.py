@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 import tempfile
 import os
-from musicpy.algorithms import C, drum, P
+from musicpy.algorithms import C, drum, P, translate
 from musicpy.daw import daw
 from .song import Song
 import logging
@@ -88,17 +88,32 @@ async def generate_progression(prog: Song):
         logger.info(f"Repeating for {prog.bars} bars")
         progression = progression * prog.bars
         
-        # Create a piece with two tracks if drums are enabled
+        # Create tracks for the guitars, bass, and drums
         tracks = [progression]
         instruments = ["Distortion Guitar"]
         channels = [0]
+        
+        # Add another guitar track
+        tracks.append(progression)
+        instruments.append("Overdriven Guitar")
+        channels.append(1)
+        
+        # Add a bass track
+        bass_notes = [str(c.notes[0]) + "[l:1/4; i:1/4]" for c in chords]
+        bass_track = translate(", ".join(bass_notes))
+        print(bass_track)
+        bass_track = bass_track - 24
+        bass_track = bass_track * prog.bars
+        tracks.append(bass_track)
+        instruments.append(34)
+        channels.append(2)
         
         if isinstance(prog.drums, str) and prog.drums in TYPICAL_DRUM_BEATS:
             drum_string = TYPICAL_DRUM_BEATS[prog.drums]
             drum_obj = drum(drum_string)
             drum_pattern = drum_obj.notes * len(chords)
             tracks.append(drum_pattern)
-            instruments.append("Synth Drum")
+            instruments.append(127)
             channels.append(9)
         
         piece = P(
@@ -107,6 +122,15 @@ async def generate_progression(prog: Song):
             bpm=prog.tempo,
             channels=channels
         )
+        
+        # Pan Guitars to the left and right
+        piece.add_pan(value=0, ind=0,start_time=0, mode="percentage")
+        piece.add_pan(value=100, ind=1,start_time=0, mode="percentage")
+        
+        # Set volume for instruments
+        piece.add_volume(value=40, ind=0,start_time=0, mode="percentage")
+        piece.add_volume(value=40, ind=1,start_time=0, mode="percentage")
+        piece.add_volume(value=100, ind=2,start_time=0, mode="percentage")
         
         # Create temporary file for WAV
         temp_dir = tempfile.mkdtemp()
